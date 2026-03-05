@@ -5,7 +5,7 @@ variable "aws_region" {
 
 variable "aws_profile" {
   type    = string
-  default = "viwell-prod"
+  default = "viwell-v2-staging"
 }
 
 variable "environment" {

@@ -14,8 +14,8 @@ brew tap hashicorp/tap
 brew install hashicorp/tap/terraform
 
 # Verify AWS SSO login
-aws sso login --profile viwell-prod
-aws sts get-caller-identity --profile viwell-prod
+aws sso login --profile viwell-v2-staging
+aws sts get-caller-identity --profile viwell-v2-staging
 
 # ============================================================
 # STEP 1: BACKUP DATA (Do this FIRST — even if UAE is degraded)
@@ -26,13 +26,13 @@ aws rds create-db-snapshot \
   --db-instance-identifier rds-viwell-v2 \
   --db-snapshot-identifier viwell-pre-migration-$(date +%Y%m%d) \
   --region me-central-1 \
-  --profile viwell-prod
+  --profile viwell-v2-staging
 
 # Wait for snapshot to complete
 aws rds wait db-snapshot-available \
   --db-snapshot-identifier viwell-pre-migration-$(date +%Y%m%d) \
   --region me-central-1 \
-  --profile viwell-prod
+  --profile viwell-v2-staging
 
 # 1b. Copy snapshot to Frankfurt
 aws rds copy-db-snapshot \
@@ -40,7 +40,7 @@ aws rds copy-db-snapshot \
   --target-db-snapshot-identifier viwell-pre-migration-$(date +%Y%m%d) \
   --source-region me-central-1 \
   --region eu-central-1 \
-  --profile viwell-prod
+  --profile viwell-v2-staging
 
 # 1c. Velero backup (if UAE cluster is still reachable)
 kubectl config use-context <your-uae-context>
@@ -50,7 +50,7 @@ velero backup create pre-migration-full --wait
 aws s3 sync s3://your-uae-bucket s3://your-frankfurt-bucket \
   --source-region me-central-1 \
   --region eu-central-1 \
-  --profile viwell-prod
+  --profile viwell-v2-staging
 
 # ============================================================
 # STEP 2: CREATE SSH KEY PAIR IN FRANKFURT
@@ -61,7 +61,7 @@ aws ec2 import-key-pair \
   --key-name viwell-prod-rds \
   --public-key-material fileb://~/.ssh/viwell-prod/rds.pub \
   --region eu-central-1 \
-  --profile viwell-prod
+  --profile viwell-v2-staging
 
 # ============================================================
 # STEP 3: TERRAFORM — PROVISION INFRASTRUCTURE
@@ -95,7 +95,7 @@ terraform output -json > /Users/rao/work/misc/aws/terraform/outputs.json
 aws acm describe-certificate \
   --certificate-arn $(terraform output -raw acm_certificate_arn) \
   --region eu-central-1 \
-  --profile viwell-prod \
+  --profile viwell-v2-staging \
   --query 'Certificate.Status'
 
 # ============================================================
@@ -106,7 +106,7 @@ aws acm describe-certificate \
 aws eks update-kubeconfig \
   --name viwell-staging \
   --region eu-central-1 \
-  --profile viwell-prod
+  --profile viwell-v2-staging
 
 kubectl get nodes  # verify nodes are Ready
 

@@ -76,9 +76,9 @@ Migrated from me-central-1 (UAE) due to region outage.
 
 ## Prerequisites
 
-1. AWS SSO configured: `aws sso login --profile viwell-prod`
+1. AWS SSO configured: `aws sso login --profile viwell-v2-staging`
 2. Terraform >= 1.5.0
-3. SSH key imported to eu-central-1: `aws ec2 import-key-pair --key-name viwell-prod-rds --public-key-material fileb://~/.ssh/viwell-prod/rds.pub --region eu-central-1 --profile viwell-prod`
+3. SSH key imported to eu-central-1: `aws ec2 import-key-pair --key-name viwell-v2-staging-rds --public-key-material fileb://~/.ssh/viwell-v2-staging/rds.pub --region eu-central-1 --profile viwell-v2-staging`
 
 ## Quick Start
 
@@ -103,7 +103,7 @@ terraform output bastion_public_ip
 terraform output rds_endpoint
 
 # SSH tunnel
-ssh -i ~/.ssh/viwell-prod/rds -L 5432:<rds-endpoint>:5432 ec2-user@<bastion-ip>
+ssh -i ~/.ssh/viwell-v2-staging/rds -L 5432:<rds-endpoint>:5432 ec2-user@<bastion-ip>
 
 # Now connect DBeaver to localhost:5432
 ```
@@ -115,7 +115,7 @@ ssh -i ~/.ssh/viwell-prod/rds -L 5432:<rds-endpoint>:5432 ec2-user@<bastion-ip>
 | **SSH Tunnel Host** | `<bastion_public_ip>` |
 | **SSH Tunnel Port** | 22 |
 | **SSH Username** | ec2-user |
-| **SSH Identity File** | ~/.ssh/viwell-prod/rds |
+| **SSH Identity File** | ~/.ssh/viwell-v2-staging/rds |
 | **DB Host** | localhost (tunneled) |
 | **DB Port** | 5432 |
 | **DB Name** | your database name |
