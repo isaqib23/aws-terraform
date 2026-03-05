@@ -2,35 +2,35 @@ aws_region  = "eu-central-1"
 aws_profile = "viwell-prod"
 environment = "staging"
 
-# EKS — match prod
+# EKS — right-sized for staging
 eks_cluster_version     = "1.31"
-eks_node_instance_types = ["m7g.xlarge"] # 4 vCPU, 16GB ARM Graviton
-eks_node_desired_size   = 4
-eks_node_min_size       = 3
-eks_node_max_size       = 7
-eks_node_disk_size      = 400
+eks_node_instance_types = ["m7g.large"]  # 2 vCPU, 8GB ARM Graviton
+eks_node_desired_size   = 2
+eks_node_min_size       = 2
+eks_node_max_size       = 4
+eks_node_disk_size      = 100
 
 # GitHub runners node group
 runner_instance_types = ["m7g.large"]
 runner_desired_size   = 1
 
-# RDS — match prod (PostgreSQL 16.6, multi-AZ, enhanced monitoring)
-rds_instance_class    = "db.r7g.large"
-rds_allocated_storage = 100
-rds_multi_az          = true
+# RDS — right-sized for staging
+rds_instance_class    = "db.t4g.medium"
+rds_allocated_storage = 50
+rds_multi_az          = false
 # rds_snapshot_identifier = "arn:aws:rds:eu-central-1:ACCOUNT_ID:snapshot:pre-migration-snapshot"
 rds_master_password = "CHANGE_ME_BEFORE_APPLY"
 
-# Redis — match prod (cluster mode: 3 shards x 2 replicas = 9 nodes, encrypted)
-redis_node_type                = "cache.r7g.large"
-redis_cluster_mode_enabled     = true
-redis_num_node_groups          = 3
-redis_replicas_per_node_group  = 2
+# Redis — single node for staging (no cluster mode)
+redis_node_type                = "cache.t4g.medium"
+redis_cluster_mode_enabled     = false
+redis_num_node_groups          = 1
+redis_replicas_per_node_group  = 0
 
-# Kafka
-kafka_instance_type   = "kafka.m7g.large"
+# Kafka — smaller instance for staging (3 brokers required by MSK/replication)
+kafka_instance_type   = "kafka.t3.small"
 kafka_broker_count    = 3
-kafka_ebs_volume_size = 100
+kafka_ebs_volume_size = 50
 
 # Bastion
 bastion_key_name      = "viwell-prod-rds"

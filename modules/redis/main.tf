@@ -8,10 +8,12 @@ resource "aws_elasticache_subnet_group" "main" {
   }
 }
 
-# Redis Replication Group — match prod (cluster mode with shards + replicas)
+# Redis Replication Group
+# cluster_mode_enabled=true  → multi-shard with failover (prod)
+# cluster_mode_enabled=false → single node, no replicas (staging)
 resource "aws_elasticache_replication_group" "main" {
-  replication_group_id = "${var.project_name}-${var.environment}-redis-cluster"
-  description          = "ElastiCache cluster for ${var.project_name} ${var.environment}"
+  replication_group_id = "${var.project_name}-${var.environment}-redis"
+  description          = "ElastiCache for ${var.project_name} ${var.environment}"
 
   engine               = "redis"
   node_type            = var.node_type
@@ -19,13 +21,11 @@ resource "aws_elasticache_replication_group" "main" {
   subnet_group_name    = aws_elasticache_subnet_group.main.name
   security_group_ids   = [var.redis_sg_id]
 
-  # Cluster mode (match prod: 3 shards, 2 replicas each = 9 nodes)
   automatic_failover_enabled = var.cluster_mode_enabled
   multi_az_enabled           = var.cluster_mode_enabled
   num_node_groups            = var.num_node_groups
   replicas_per_node_group    = var.replicas_per_node_group
 
-  # Encryption (match prod)
   at_rest_encryption_enabled = true
   transit_encryption_enabled = true
 

@@ -188,9 +188,11 @@ resource "aws_iam_openid_connect_provider" "eks" {
 
 # Pod Identity Agent (match prod: v1.3.4)
 resource "aws_eks_addon" "pod_identity" {
-  cluster_name  = aws_eks_cluster.main.name
-  addon_name    = "eks-pod-identity-agent"
-  addon_version = "v1.3.4-eksbuild.1"
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "eks-pod-identity-agent"
+  addon_version               = "v1.3.4-eksbuild.1"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
 
   depends_on = [aws_eks_node_group.app]
 }
@@ -247,10 +249,12 @@ resource "aws_eks_pod_identity_association" "ebs_csi_driver" {
 }
 
 resource "aws_eks_addon" "ebs_csi_driver" {
-  cluster_name             = aws_eks_cluster.main.name
-  addon_name               = "aws-ebs-csi-driver"
-  addon_version            = "v1.38.1-eksbuild.1"
-  service_account_role_arn = aws_iam_role.ebs_csi_driver.arn
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "aws-ebs-csi-driver"
+  addon_version               = "v1.38.1-eksbuild.1"
+  service_account_role_arn    = aws_iam_role.ebs_csi_driver.arn
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
 
   depends_on = [aws_eks_node_group.app]
 }

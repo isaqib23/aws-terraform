@@ -32,28 +32,28 @@ variable "eks_cluster_version" {
 
 variable "eks_node_instance_types" {
   type    = list(string)
-  default = ["m7g.xlarge"] # Graviton ARM
+  default = ["m7g.large"] # Graviton ARM, right-sized for staging
 }
 
 variable "eks_node_desired_size" {
   type    = number
-  default = 4 # Match prod
+  default = 2
 }
 
 variable "eks_node_min_size" {
   type    = number
-  default = 3 # Match prod
+  default = 2
 }
 
 variable "eks_node_max_size" {
   type    = number
-  default = 7 # Match prod
+  default = 4
 }
 
 variable "eks_node_disk_size" {
-  description = "Disk size in GiB for worker nodes (match prod: 400)"
+  description = "Disk size in GiB for worker nodes"
   type        = number
-  default     = 400
+  default     = 100
 }
 
 variable "runner_instance_types" {
@@ -69,7 +69,7 @@ variable "runner_desired_size" {
 # RDS
 variable "rds_instance_class" {
   type    = string
-  default = "db.r7g.large" # Graviton
+  default = "db.t4g.medium" # Graviton, right-sized for staging
 }
 
 variable "rds_snapshot_identifier" {
@@ -80,7 +80,7 @@ variable "rds_snapshot_identifier" {
 
 variable "rds_allocated_storage" {
   type    = number
-  default = 100
+  default = 50
 }
 
 variable "rds_master_username" {
@@ -95,39 +95,39 @@ variable "rds_master_password" {
 }
 
 variable "rds_multi_az" {
-  description = "Enable Multi-AZ for RDS (prod=true)"
+  description = "Enable Multi-AZ for RDS"
   type        = bool
-  default     = true
+  default     = false
 }
 
 # Redis
 variable "redis_node_type" {
   type    = string
-  default = "cache.r7g.large" # Graviton
+  default = "cache.t4g.medium" # Graviton, right-sized for staging
 }
 
 variable "redis_cluster_mode_enabled" {
-  description = "Enable Redis cluster mode (match prod: true)"
+  description = "Enable Redis cluster mode"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "redis_num_node_groups" {
-  description = "Number of shards (match prod: 3)"
+  description = "Number of shards"
   type        = number
-  default     = 3
+  default     = 1
 }
 
 variable "redis_replicas_per_node_group" {
-  description = "Replicas per shard (match prod: 2)"
+  description = "Replicas per shard"
   type        = number
-  default     = 2
+  default     = 0
 }
 
 # Kafka / MSK
 variable "kafka_instance_type" {
   type    = string
-  default = "kafka.m7g.large"
+  default = "kafka.t3.small" # right-sized for staging
 }
 
 variable "kafka_broker_count" {
@@ -137,7 +137,7 @@ variable "kafka_broker_count" {
 
 variable "kafka_ebs_volume_size" {
   type    = number
-  default = 100
+  default = 50
 }
 
 # Bastion

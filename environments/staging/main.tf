@@ -54,9 +54,12 @@ module "rds" {
   instance_class      = var.rds_instance_class
   allocated_storage   = var.rds_allocated_storage
   snapshot_identifier = var.rds_snapshot_identifier
-  master_username     = var.rds_master_username
-  master_password     = var.rds_master_password
-  multi_az            = var.rds_multi_az
+  master_username              = var.rds_master_username
+  master_password              = var.rds_master_password
+  multi_az                     = var.rds_multi_az
+  deletion_protection          = false  # staging: allow clean destroy
+  skip_final_snapshot          = true   # staging: no snapshot on destroy
+  performance_insights_enabled = false  # not supported on db.t4g.medium
 }
 
 # --- ElastiCache Redis ---
@@ -90,9 +93,10 @@ module "kafka" {
 module "s3_ecr" {
   source = "../../modules/s3-ecr"
 
-  project_name = var.project_name
-  environment  = var.environment
-  domain_name  = var.domain_name
+  project_name  = var.project_name
+  environment   = var.environment
+  domain_name   = var.domain_name
+  force_destroy = true  # staging: allow clean destroy/re-create
 }
 
 # --- Bastion Host (for SSH tunnel to RDS) ---

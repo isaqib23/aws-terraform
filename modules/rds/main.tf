@@ -33,13 +33,13 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 resource "aws_db_instance" "main" {
   identifier = "${var.project_name}-${var.environment}-rds"
 
-  # If restoring from snapshot (cross-region copy)
+  # Snapshot restore (cross-region copy) — set to null for fresh DB
   snapshot_identifier = var.snapshot_identifier != "" ? var.snapshot_identifier : null
 
-  # Only needed when NOT restoring from snapshot
-  engine         = var.snapshot_identifier == "" ? "postgres" : null
-  engine_version = var.snapshot_identifier == "" ? "16.6" : null
-  username       = var.snapshot_identifier == "" ? var.master_username : null
+  # Always set these — Terraform needs them even with snapshot restore
+  engine         = "postgres"
+  engine_version = "16.6"
+  username       = var.master_username
   password       = var.master_password
 
   instance_class        = var.instance_class
@@ -54,9 +54,9 @@ resource "aws_db_instance" "main" {
   publicly_accessible = false
 
   multi_az            = var.multi_az
-  deletion_protection = true
-  skip_final_snapshot = false
-  final_snapshot_identifier = "${var.project_name}-${var.environment}-final-snapshot"
+  deletion_protection = var.deletion_protection
+  skip_final_snapshot = var.skip_final_snapshot
+  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.project_name}-${var.environment}-final-${formatdate("YYYYMMDDhhmmss", timestamp())}"
 
   backup_retention_period = 7
   backup_window           = "03:00-04:00"
@@ -66,10 +66,15 @@ resource "aws_db_instance" "main" {
   monitoring_interval = 60
   monitoring_role_arn = aws_iam_role.rds_monitoring.arn
 
-  # Performance Insights
-  performance_insights_enabled = true
+  # Performance Insights (not supported on db.t4g.medium and smaller)
+  performance_insights_enabled = var.performance_insights_enabled
 
   tags = {
     Name = "${var.project_name}-${var.environment}-rds"
+  }
+
+  # Ignore final_snapshot_identifier changes from timestamp
+  lifecycle {
+    ignore_changes = [final_snapshot_identifier]
   }
 }

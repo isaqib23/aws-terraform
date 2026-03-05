@@ -42,3 +42,21 @@ variable "multi_az" {
   type        = bool
   default     = true
 }
+
+variable "deletion_protection" {
+  description = "Enable deletion protection (prod=true, staging=false for clean destroy)"
+  type        = bool
+  default     = true
+}
+
+variable "skip_final_snapshot" {
+  description = "Skip final snapshot on destroy (staging=true for clean destroy)"
+  type        = bool
+  default     = false
+}
+
+variable "performance_insights_enabled" {
+  description = "Enable Performance Insights (not supported on db.t4g.medium)"
+  type        = bool
+  default     = true
+}
