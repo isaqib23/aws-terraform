@@ -1,0 +1,34 @@
+aws_region  = "eu-central-1"
+aws_profile = "viwell-prod"
+environment = "staging"
+
+# EKS
+eks_cluster_version     = "1.29"
+eks_node_instance_types = ["m7g.xlarge"] # 4 vCPU, 16GB ARM Graviton
+eks_node_desired_size   = 3
+eks_node_min_size       = 2
+eks_node_max_size       = 6
+
+# GitHub runners node group
+runner_instance_types = ["m7g.large"]
+runner_desired_size   = 1
+
+# RDS — uncomment snapshot_identifier after cross-region copy
+rds_instance_class    = "db.r7g.large"
+rds_allocated_storage = 100
+# rds_snapshot_identifier = "arn:aws:rds:eu-central-1:ACCOUNT_ID:snapshot:pre-migration-snapshot"
+rds_master_password = "CHANGE_ME_BEFORE_APPLY"
+
+# Redis
+redis_node_type = "cache.r7g.large"
+
+# Kafka
+kafka_instance_type   = "kafka.m7g.large"
+kafka_broker_count    = 3
+kafka_ebs_volume_size = 100
+
+# Bastion
+bastion_key_name      = "viwell-prod-rds"
+bastion_instance_type = "t4g.micro"
+
+domain_name = "viwell.me"
