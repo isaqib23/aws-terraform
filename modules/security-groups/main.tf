@@ -162,11 +162,20 @@ resource "aws_security_group" "kafka" {
   vpc_id      = var.vpc_id
   description = "Kafka MSK - only accessible from EKS nodes"
 
-  # Plaintext (no TLS, matching your current setup)
+  # Plaintext (no TLS, matching current setup)
   ingress {
     description     = "Kafka plaintext from EKS nodes"
     from_port       = 9092
     to_port         = 9092
+    protocol        = "tcp"
+    security_groups = [aws_security_group.eks_nodes.id]
+  }
+
+  # TLS port (match prod SG: port 9094)
+  ingress {
+    description     = "Kafka TLS from EKS nodes"
+    from_port       = 9094
+    to_port         = 9094
     protocol        = "tcp"
     security_groups = [aws_security_group.eks_nodes.id]
   }

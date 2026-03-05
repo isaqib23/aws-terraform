@@ -2,25 +2,30 @@ aws_region  = "eu-central-1"
 aws_profile = "viwell-prod"
 environment = "staging"
 
-# EKS
-eks_cluster_version     = "1.29"
+# EKS — match prod
+eks_cluster_version     = "1.31"
 eks_node_instance_types = ["m7g.xlarge"] # 4 vCPU, 16GB ARM Graviton
-eks_node_desired_size   = 3
-eks_node_min_size       = 2
-eks_node_max_size       = 6
+eks_node_desired_size   = 4
+eks_node_min_size       = 3
+eks_node_max_size       = 7
+eks_node_disk_size      = 400
 
 # GitHub runners node group
 runner_instance_types = ["m7g.large"]
 runner_desired_size   = 1
 
-# RDS — uncomment snapshot_identifier after cross-region copy
+# RDS — match prod (PostgreSQL 16.6, multi-AZ, enhanced monitoring)
 rds_instance_class    = "db.r7g.large"
 rds_allocated_storage = 100
+rds_multi_az          = true
 # rds_snapshot_identifier = "arn:aws:rds:eu-central-1:ACCOUNT_ID:snapshot:pre-migration-snapshot"
 rds_master_password = "CHANGE_ME_BEFORE_APPLY"
 
-# Redis
-redis_node_type = "cache.r7g.large"
+# Redis — match prod (cluster mode: 3 shards x 2 replicas = 9 nodes, encrypted)
+redis_node_type                = "cache.r7g.large"
+redis_cluster_mode_enabled     = true
+redis_num_node_groups          = 3
+redis_replicas_per_node_group  = 2
 
 # Kafka
 kafka_instance_type   = "kafka.m7g.large"

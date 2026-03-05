@@ -27,27 +27,33 @@ variable "vpc_cidr" {
 # EKS
 variable "eks_cluster_version" {
   type    = string
-  default = "1.29"
+  default = "1.31" # Match prod
 }
 
 variable "eks_node_instance_types" {
   type    = list(string)
-  default = ["m7g.xlarge"] # Graviton ARM — ~20% cheaper
+  default = ["m7g.xlarge"] # Graviton ARM
 }
 
 variable "eks_node_desired_size" {
   type    = number
-  default = 3
+  default = 4 # Match prod
 }
 
 variable "eks_node_min_size" {
   type    = number
-  default = 2
+  default = 3 # Match prod
 }
 
 variable "eks_node_max_size" {
   type    = number
-  default = 6
+  default = 7 # Match prod
+}
+
+variable "eks_node_disk_size" {
+  description = "Disk size in GiB for worker nodes (match prod: 400)"
+  type        = number
+  default     = 400
 }
 
 variable "runner_instance_types" {
@@ -88,10 +94,34 @@ variable "rds_master_password" {
   sensitive = true
 }
 
+variable "rds_multi_az" {
+  description = "Enable Multi-AZ for RDS (prod=true)"
+  type        = bool
+  default     = true
+}
+
 # Redis
 variable "redis_node_type" {
   type    = string
   default = "cache.r7g.large" # Graviton
+}
+
+variable "redis_cluster_mode_enabled" {
+  description = "Enable Redis cluster mode (match prod: true)"
+  type        = bool
+  default     = true
+}
+
+variable "redis_num_node_groups" {
+  description = "Number of shards (match prod: 3)"
+  type        = number
+  default     = 3
+}
+
+variable "redis_replicas_per_node_group" {
+  description = "Replicas per shard (match prod: 2)"
+  type        = number
+  default     = 2
 }
 
 # Kafka / MSK

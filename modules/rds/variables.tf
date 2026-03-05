@@ -36,3 +36,9 @@ variable "master_password" {
   type      = string
   sensitive = true
 }
+
+variable "multi_az" {
+  description = "Enable Multi-AZ (prod=true, staging=false)"
+  type        = bool
+  default     = true
+}

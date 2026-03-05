@@ -1,6 +1,7 @@
 # =============================================================================
 # Viwell Staging Infrastructure — Frankfurt (eu-central-1)
 # Migrated from me-central-1 (UAE) due to region outage
+# Matched with master-prod-viwell-v2-infra
 # =============================================================================
 
 # --- VPC ---
@@ -27,14 +28,17 @@ module "eks" {
 
   project_name        = var.project_name
   environment         = var.environment
+  region              = var.aws_region
   cluster_version     = var.eks_cluster_version
   private_subnet_ids  = module.vpc.private_subnet_ids
   public_subnet_ids   = module.vpc.public_subnet_ids
+  vpc_id              = module.vpc.vpc_id
   cluster_sg_id       = module.security_groups.eks_cluster_sg_id
   node_instance_types = var.eks_node_instance_types
   node_desired_size   = var.eks_node_desired_size
   node_min_size       = var.eks_node_min_size
   node_max_size       = var.eks_node_max_size
+  node_disk_size      = var.eks_node_disk_size
   runner_instance_types = var.runner_instance_types
   runner_desired_size   = var.runner_desired_size
 }
@@ -52,17 +56,21 @@ module "rds" {
   snapshot_identifier = var.rds_snapshot_identifier
   master_username     = var.rds_master_username
   master_password     = var.rds_master_password
+  multi_az            = var.rds_multi_az
 }
 
 # --- ElastiCache Redis ---
 module "redis" {
   source = "../../modules/redis"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  private_subnet_ids = module.vpc.private_subnet_ids
-  redis_sg_id        = module.security_groups.redis_sg_id
-  node_type          = var.redis_node_type
+  project_name            = var.project_name
+  environment             = var.environment
+  private_subnet_ids      = module.vpc.private_subnet_ids
+  redis_sg_id             = module.security_groups.redis_sg_id
+  node_type               = var.redis_node_type
+  cluster_mode_enabled    = var.redis_cluster_mode_enabled
+  num_node_groups         = var.redis_num_node_groups
+  replicas_per_node_group = var.redis_replicas_per_node_group
 }
 
 # --- MSK Kafka ---
@@ -91,10 +99,10 @@ module "s3_ecr" {
 module "bastion" {
   source = "../../modules/bastion"
 
-  project_name    = var.project_name
-  environment     = var.environment
-  instance_type   = var.bastion_instance_type
-  key_name        = var.bastion_key_name
+  project_name     = var.project_name
+  environment      = var.environment
+  instance_type    = var.bastion_instance_type
+  key_name         = var.bastion_key_name
   public_subnet_id = module.vpc.public_subnet_ids[0]
-  bastion_sg_id   = module.security_groups.bastion_sg_id
+  bastion_sg_id    = module.security_groups.bastion_sg_id
 }

@@ -29,3 +29,11 @@ output "lb_controller_role_arn" {
 output "velero_role_arn" {
   value = aws_iam_role.velero.arn
 }
+
+output "external_dns_role_arn" {
+  value = aws_iam_role.external_dns.arn
+}
+
+output "cluster_autoscaler_role_arn" {
+  value = aws_iam_role.cluster_autoscaler.arn
+}

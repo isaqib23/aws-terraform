@@ -6,6 +6,10 @@ variable "environment" {
   type = string
 }
 
+variable "region" {
+  type = string
+}
+
 variable "cluster_version" {
   type = string
 }
@@ -16,6 +20,10 @@ variable "private_subnet_ids" {
 
 variable "public_subnet_ids" {
   type = list(string)
+}
+
+variable "vpc_id" {
+  type = string
 }
 
 variable "cluster_sg_id" {
@@ -36,6 +44,12 @@ variable "node_min_size" {
 
 variable "node_max_size" {
   type = number
+}
+
+variable "node_disk_size" {
+  description = "Disk size in GiB for worker nodes (match prod: 400)"
+  type        = number
+  default     = 400
 }
 
 variable "runner_instance_types" {

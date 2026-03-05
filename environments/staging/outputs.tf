@@ -31,8 +31,15 @@ output "eks_update_kubeconfig_command" {
 }
 
 output "eks_lb_controller_role_arn" {
-  description = "Use this for AWS Load Balancer Controller service account annotation"
-  value       = module.eks.lb_controller_role_arn
+  value = module.eks.lb_controller_role_arn
+}
+
+output "eks_external_dns_role_arn" {
+  value = module.eks.external_dns_role_arn
+}
+
+output "eks_cluster_autoscaler_role_arn" {
+  value = module.eks.cluster_autoscaler_role_arn
 }
 
 output "velero_role_arn" {
@@ -50,13 +57,13 @@ output "rds_port" {
 }
 
 # Redis
-output "redis_endpoint" {
-  description = "Update REDIS_HOST in your secrets with this value"
-  value       = module.redis.endpoint
+output "redis_configuration_endpoint" {
+  description = "Update REDIS_HOST in your secrets with this value (cluster mode)"
+  value       = module.redis.configuration_endpoint
 }
 
-output "redis_port" {
-  value = module.redis.port
+output "redis_primary_endpoint" {
+  value = module.redis.primary_endpoint
 }
 
 # Kafka
