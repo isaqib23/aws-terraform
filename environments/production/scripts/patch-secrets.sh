@@ -9,7 +9,9 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-K8S_DIR="/Users/rao/work/misc/aws/k8s_v2_prod-main"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+K8S_DIR="$REPO_ROOT/k8s_v2_prod-main"
 
 # Read new RDS endpoint from Terraform
 NEW_RDS_HOST=$(terraform output -raw rds_endpoint)

@@ -7,7 +7,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-K8S_DIR="/Users/rao/work/misc/aws/k8s_v2_prod-main"
+# K8S_DIR: relative to repo root (scripts/ → production/ → environments/ → aws-terraform/ → repo root)
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+K8S_DIR="$REPO_ROOT/k8s_v2_prod-main"
 NAMESPACE="prod-viwell"
 
 echo "============================================"
