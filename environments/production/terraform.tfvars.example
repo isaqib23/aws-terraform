@@ -1,0 +1,43 @@
+aws_region  = "eu-central-1"
+aws_profile = "viwell-prod"
+environment = "prod"
+
+# VPC — 3 NAT Gateways for HA (one per AZ)
+nat_gateway_count = 3
+
+# EKS — ARM Graviton, production sized
+eks_cluster_version     = "1.31"
+eks_node_instance_types = ["m7g.xlarge"]  # 4 vCPU, 16GB ARM Graviton
+eks_node_desired_size   = 4
+eks_node_min_size       = 3
+eks_node_max_size       = 8
+eks_node_disk_size      = 400
+
+# GitHub runners — dedicated SPOT nodes
+runner_instance_types = ["m7g.large"]
+runner_desired_size   = 1
+
+# RDS — production HA
+rds_instance_class        = "db.m7g.large"   # 2 vCPU, 8GB ARM Graviton
+rds_allocated_storage     = 100
+rds_max_allocated_storage = 500
+rds_multi_az              = true
+# rds_snapshot_identifier = "arn:aws:rds:eu-central-1:ACCOUNT_ID:snapshot:pre-migration-snapshot"
+rds_master_password = "CHANGE_ME_BEFORE_APPLY"
+
+# Redis — full HA cluster (3 shards x 2 replicas = 9 nodes)
+redis_node_type                = "cache.m7g.large"  # 6.38GB per node
+redis_cluster_mode_enabled     = true
+redis_num_node_groups          = 3
+redis_replicas_per_node_group  = 2
+
+# Kafka — production sized
+kafka_instance_type   = "kafka.m7g.large"  # 8GB ARM Graviton
+kafka_broker_count    = 3
+kafka_ebs_volume_size = 100
+
+# Bastion
+bastion_key_name      = "viwell-prod-rds"
+bastion_instance_type = "t4g.micro"
+
+domain_name = "viwell.tech"
