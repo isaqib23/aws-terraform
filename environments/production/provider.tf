@@ -17,12 +17,12 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "viwell-master-production-infrastructure-terraform"
-    key            = "prod-frankfurt/terraform.tfstate"
-    region         = "eu-central-1"
-    profile        = "viwell-prod"
-    encrypt        = true
-    dynamodb_table = "viwell-master-prod-terraform-lock"
+    bucket       = "viwell-prod-frankfurt-terraform-state"
+    key          = "prod-frankfurt/terraform.tfstate"
+    region       = "eu-central-1"
+    profile      = "viwell-prod"
+    encrypt      = true
+    use_lockfile = true
   }
 }
 
