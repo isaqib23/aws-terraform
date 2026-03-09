@@ -5,12 +5,12 @@ variable "aws_region" {
 
 variable "aws_profile" {
   type    = string
-  default = "viwell-v2-staging"
+  default = "viwell-prod"
 }
 
 variable "environment" {
   type    = string
-  default = "staging"
+  default = "prod"
 }
 
 variable "project_name" {
@@ -24,36 +24,42 @@ variable "vpc_cidr" {
   default = "10.0.0.0/16"
 }
 
+variable "nat_gateway_count" {
+  description = "Number of NAT Gateways (3 for prod HA — one per AZ)"
+  type        = number
+  default     = 3
+}
+
 # EKS
 variable "eks_cluster_version" {
   type    = string
-  default = "1.31" # Match prod
+  default = "1.31"
 }
 
 variable "eks_node_instance_types" {
   type    = list(string)
-  default = ["m7g.large"] # Graviton ARM, right-sized for staging
+  default = ["m7g.xlarge"] # Graviton ARM, 4 vCPU 16GB — production sized
 }
 
 variable "eks_node_desired_size" {
   type    = number
-  default = 2
+  default = 4
 }
 
 variable "eks_node_min_size" {
   type    = number
-  default = 2
+  default = 3
 }
 
 variable "eks_node_max_size" {
   type    = number
-  default = 4
+  default = 8
 }
 
 variable "eks_node_disk_size" {
   description = "Disk size in GiB for worker nodes"
   type        = number
-  default     = 100
+  default     = 400
 }
 
 variable "runner_instance_types" {
@@ -69,7 +75,7 @@ variable "runner_desired_size" {
 # RDS
 variable "rds_instance_class" {
   type    = string
-  default = "db.t4g.medium" # Graviton, right-sized for staging
+  default = "db.m7g.large" # Graviton ARM, 2 vCPU 8GB
 }
 
 variable "rds_snapshot_identifier" {
@@ -80,7 +86,13 @@ variable "rds_snapshot_identifier" {
 
 variable "rds_allocated_storage" {
   type    = number
-  default = 50
+  default = 100
+}
+
+variable "rds_max_allocated_storage" {
+  description = "Max storage for RDS auto-scaling"
+  type        = number
+  default     = 500
 }
 
 variable "rds_master_username" {
@@ -97,37 +109,37 @@ variable "rds_master_password" {
 variable "rds_multi_az" {
   description = "Enable Multi-AZ for RDS"
   type        = bool
-  default     = false
+  default     = true
 }
 
 # Redis
 variable "redis_node_type" {
   type    = string
-  default = "cache.t4g.medium" # Graviton, right-sized for staging
+  default = "cache.m7g.large" # Graviton ARM, 6.38GB
 }
 
 variable "redis_cluster_mode_enabled" {
   description = "Enable Redis cluster mode"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "redis_num_node_groups" {
   description = "Number of shards"
   type        = number
-  default     = 1
+  default     = 3
 }
 
 variable "redis_replicas_per_node_group" {
   description = "Replicas per shard"
   type        = number
-  default     = 0
+  default     = 2
 }
 
 # Kafka / MSK
 variable "kafka_instance_type" {
   type    = string
-  default = "kafka.t3.small" # right-sized for staging
+  default = "kafka.m7g.large" # Graviton ARM, 8GB
 }
 
 variable "kafka_broker_count" {
@@ -137,7 +149,7 @@ variable "kafka_broker_count" {
 
 variable "kafka_ebs_volume_size" {
   type    = number
-  default = 50
+  default = 100
 }
 
 # Bastion
@@ -151,15 +163,8 @@ variable "bastion_instance_type" {
   default = "t4g.micro"
 }
 
-# VPC
-variable "nat_gateway_count" {
-  description = "Number of NAT Gateways (1 for staging, 3 for prod HA)"
-  type        = number
-  default     = 1
-}
-
 # Domain
 variable "domain_name" {
   type    = string
-  default = "viwell.me"
+  default = "viwell.tech"
 }

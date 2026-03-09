@@ -1,7 +1,6 @@
 # =============================================================================
-# Viwell Staging Infrastructure — Frankfurt (eu-central-1)
-# Migrated from me-central-1 (UAE) due to region outage
-# Matched with master-prod-viwell-v2-infra
+# Viwell Production Infrastructure — Frankfurt (eu-central-1)
+# Migrated from me-central-1 (UAE) — account 867344468263
 # =============================================================================
 
 # --- VPC ---
@@ -11,7 +10,7 @@ module "vpc" {
   vpc_cidr          = var.vpc_cidr
   project_name      = var.project_name
   environment       = var.environment
-  nat_gateway_count = var.nat_gateway_count
+  nat_gateway_count = var.nat_gateway_count # 3 NAT GWs for prod HA
 }
 
 # --- Security Groups ---
@@ -54,13 +53,14 @@ module "rds" {
   rds_sg_id           = module.security_groups.rds_sg_id
   instance_class      = var.rds_instance_class
   allocated_storage   = var.rds_allocated_storage
+  max_allocated_storage = var.rds_max_allocated_storage
   snapshot_identifier = var.rds_snapshot_identifier
   master_username              = var.rds_master_username
   master_password              = var.rds_master_password
   multi_az                     = var.rds_multi_az
-  deletion_protection          = false  # staging: allow clean destroy
-  skip_final_snapshot          = true   # staging: no snapshot on destroy
-  performance_insights_enabled = false  # not supported on db.t4g.medium
+  deletion_protection          = true   # prod: prevent accidental deletion
+  skip_final_snapshot          = false  # prod: create snapshot on destroy
+  performance_insights_enabled = true   # prod: enabled (db.m7g.large supports it)
 }
 
 # --- ElastiCache Redis ---
@@ -97,7 +97,7 @@ module "s3_ecr" {
   project_name  = var.project_name
   environment   = var.environment
   domain_name   = var.domain_name
-  force_destroy = true  # staging: allow clean destroy/re-create
+  force_destroy = false # prod: prevent accidental ECR/S3 deletion
 }
 
 # --- Bastion Host (for SSH tunnel to RDS) ---

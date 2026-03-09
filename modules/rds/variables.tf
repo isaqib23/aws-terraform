@@ -22,6 +22,12 @@ variable "allocated_storage" {
   type = number
 }
 
+variable "max_allocated_storage" {
+  description = "Max storage for auto-scaling (0 = 2x allocated_storage)"
+  type        = number
+  default     = 0
+}
+
 variable "snapshot_identifier" {
   type    = string
   default = ""

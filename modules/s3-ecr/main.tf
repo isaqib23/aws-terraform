@@ -38,6 +38,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "velero" {
   rule {
     id     = "cleanup-old-backups"
     status = "Enabled"
+    filter {}
     expiration {
       days = 30
     }
