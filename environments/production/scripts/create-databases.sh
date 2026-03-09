@@ -30,10 +30,10 @@ DATABASES=(
 
 for DB in "${DATABASES[@]}"; do
   echo "Creating database: $DB"
-  PGPASSWORD="${RDS_PASS:-}" psql -h localhost -p 5432 -U "$RDS_USER" -tc \
+  PGPASSWORD="${RDS_PASS:-}" psql -h localhost -p 5432 -U "$RDS_USER" -d postgres -tc \
     "SELECT 1 FROM pg_database WHERE datname = '$DB'" | grep -q 1 \
     && echo "  -> already exists, skipping" \
-    || PGPASSWORD="${RDS_PASS:-}" psql -h localhost -p 5432 -U "$RDS_USER" -c "CREATE DATABASE $DB;" \
+    || PGPASSWORD="${RDS_PASS:-}" psql -h localhost -p 5432 -U "$RDS_USER" -d postgres -c "CREATE DATABASE $DB;" \
     && echo "  -> created"
 done
 
