@@ -10,7 +10,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 RDS_HOST=$(terraform output -raw rds_endpoint)
-REDIS_HOST=$(terraform output -raw redis_primary_endpoint | cut -d: -f1)
+REDIS_HOST=$(terraform output -raw redis_configuration_endpoint | cut -d: -f1)
 RDS_PASSWORD="${RDS_PASS:-CHANGE_ME}"
 
 NAMESPACE="prod-viwell"

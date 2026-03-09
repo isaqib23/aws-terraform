@@ -10,7 +10,7 @@ cd "$(dirname "$0")/.."
 
 echo "=== Reading Terraform outputs ==="
 RDS_HOST=$(terraform output -raw rds_endpoint)
-REDIS_ENDPOINT=$(terraform output -raw redis_primary_endpoint)
+REDIS_ENDPOINT=$(terraform output -raw redis_configuration_endpoint)
 KAFKA_BROKERS=$(terraform output -raw kafka_bootstrap_brokers)
 AWS_REGION="eu-central-1"
 RDS_PASSWORD="${RDS_PASS:-CHANGE_ME}"

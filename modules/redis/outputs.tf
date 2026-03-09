@@ -4,8 +4,8 @@ output "configuration_endpoint" {
 }
 
 output "primary_endpoint" {
-  description = "Redis primary endpoint"
-  value       = aws_elasticache_replication_group.main.primary_endpoint_address
+  description = "Redis primary endpoint (null in cluster mode — use configuration_endpoint instead)"
+  value       = try(aws_elasticache_replication_group.main.primary_endpoint_address, "")
 }
 
 output "port" {
