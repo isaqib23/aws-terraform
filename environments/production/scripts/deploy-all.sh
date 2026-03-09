@@ -64,14 +64,12 @@ for SECRET_FILE in \
   "$K8S_DIR/user/secret.yaml" \
   "$K8S_DIR/cli/secret.yaml" \
   "$K8S_DIR/notification/secret.yaml" \
-  "$K8S_DIR/gamify/secret.yaml" \
+  "$K8S_DIR/gamify/secrets-gamify.yaml" \
   "$K8S_DIR/wearable/secret.yaml" \
   "$K8S_DIR/wearable-process/secret.yaml" \
   "$K8S_DIR/payment/secret.yaml" \
   "$K8S_DIR/cms/secret.yaml" \
-  "$K8S_DIR/replication/secret.yaml" \
-  "$K8S_DIR/replication/secrets-xoxo.yaml" \
-  "$K8S_DIR/super-web-admin/secret.yaml"; do
+  "$K8S_DIR/replication/secrets-xoxo.yaml"; do
   if [ -f "$SECRET_FILE" ]; then
     echo "  Applying: $SECRET_FILE"
     kubectl apply -f "$SECRET_FILE"
