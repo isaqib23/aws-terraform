@@ -51,10 +51,11 @@ if [ -f "$K8S_DIR/configmaps/sahha-cm.yaml" ]; then
 fi
 echo ""
 
-# --- Phase 4: Apply secrets ---
-echo "=== Phase 4: Applying secrets ==="
-echo "NOTE: Secrets must be updated with correct values before applying!"
-echo "Press Enter to continue or Ctrl+C to abort..."
+# --- Phase 4: Patch and apply secrets ---
+echo "=== Phase 4: Patching secrets with Frankfurt RDS endpoint ==="
+bash "$SCRIPT_DIR/patch-secrets.sh"
+echo ""
+echo "Secrets patched. Review above output, then press Enter to apply or Ctrl+C to abort..."
 read -r
 
 for SECRET_FILE in \
