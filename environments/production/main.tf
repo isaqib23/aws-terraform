@@ -17,9 +17,10 @@ module "vpc" {
 module "security_groups" {
   source = "../../modules/security-groups"
 
-  vpc_id       = module.vpc.vpc_id
-  project_name = var.project_name
-  environment  = var.environment
+  vpc_id                = module.vpc.vpc_id
+  project_name          = var.project_name
+  environment           = var.environment
+  bastion_allowed_cidrs = var.bastion_allowed_cidrs
 }
 
 # --- EKS ---

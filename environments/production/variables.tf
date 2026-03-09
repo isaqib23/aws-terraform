@@ -163,6 +163,13 @@ variable "bastion_instance_type" {
   default = "t4g.micro"
 }
 
+# Security
+variable "bastion_allowed_cidrs" {
+  description = "CIDRs allowed to SSH to bastion (set to office IP for production)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"] # TODO: restrict to office IP e.g. ["203.0.113.10/32"]
+}
+
 # Domain
 variable "domain_name" {
   type    = string

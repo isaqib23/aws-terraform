@@ -224,7 +224,7 @@ resource "aws_security_group" "bastion" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Restrict to your office IP for production
+    cidr_blocks = var.bastion_allowed_cidrs
   }
 
   egress {

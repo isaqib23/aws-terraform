@@ -15,18 +15,24 @@ echo "  Viwell Production Deployment Orchestrator"
 echo "============================================"
 echo ""
 
-# --- Phase 1: Connect to cluster ---
+# --- Phase 1: Connect to cluster and read Terraform outputs ---
 echo "=== Phase 1: Connecting to EKS cluster ==="
 cd "$SCRIPT_DIR/.."
 KUBECONFIG_CMD=$(terraform output -raw eks_update_kubeconfig_command)
 eval "$KUBECONFIG_CMD"
 kubectl get nodes
+
+# Read terraform outputs needed later
+ACM_ARN=$(terraform output -raw acm_certificate_arn)
+VELERO_ROLE_ARN=$(terraform output -raw velero_role_arn)
+VELERO_BUCKET=$(terraform output -raw velero_bucket)
 echo ""
 
 # --- Phase 2: Create namespaces ---
 echo "=== Phase 2: Creating namespaces ==="
 kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace elastic-prod --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace velero --dry-run=client -o yaml | kubectl apply -f -
 echo ""
 
 # --- Phase 3: Generate and apply ConfigMaps ---
@@ -100,10 +106,14 @@ echo "=== Phase 7: Installing Elasticsearch ==="
 helm repo add elastic https://helm.elastic.co 2>/dev/null || true
 helm repo update
 if [ -f "$K8S_DIR/elastic-search/values.yaml" ]; then
+  # Inject ACM ARN from terraform into ES values
+  ES_VALUES_TMP=$(mktemp)
+  sed "s|PLACEHOLDER_ACM_ARN|${ACM_ARN}|g" "$K8S_DIR/elastic-search/values.yaml" > "$ES_VALUES_TMP"
   helm upgrade --install elasticsearch elastic/elasticsearch \
     -n elastic-prod \
-    -f "$K8S_DIR/elastic-search/values.yaml" \
+    -f "$ES_VALUES_TMP" \
     --timeout 10m
+  rm -f "$ES_VALUES_TMP"
 fi
 echo ""
 
@@ -139,6 +149,32 @@ if [ -d "$K8S_DIR/../Additional-services/1-runners-github" ]; then
 fi
 echo ""
 
+# --- Phase 12: Velero backups ---
+echo "=== Phase 12: Installing Velero for disaster recovery ==="
+helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts 2>/dev/null || true
+helm repo update
+helm upgrade --install velero vmware-tanzu/velero \
+  -n velero \
+  --set configuration.backupStorageLocation[0].name=default \
+  --set configuration.backupStorageLocation[0].provider=aws \
+  --set configuration.backupStorageLocation[0].bucket="${VELERO_BUCKET}" \
+  --set configuration.backupStorageLocation[0].config.region=eu-central-1 \
+  --set configuration.volumeSnapshotLocation[0].name=default \
+  --set configuration.volumeSnapshotLocation[0].provider=aws \
+  --set configuration.volumeSnapshotLocation[0].config.region=eu-central-1 \
+  --set serviceAccount.server.annotations."eks\.amazonaws\.com/role-arn"="${VELERO_ROLE_ARN}" \
+  --set initContainers[0].name=velero-plugin-for-aws \
+  --set initContainers[0].image=velero/velero-plugin-for-aws:v1.9.0 \
+  --set initContainers[0].volumeMounts[0].mountPath=/target \
+  --set initContainers[0].volumeMounts[0].name=plugins \
+  --set schedules.daily-backup.disabled=false \
+  --set schedules.daily-backup.schedule="0 2 * * *" \
+  --set schedules.daily-backup.template.ttl="168h" \
+  --set schedules.daily-backup.template.includedNamespaces[0]="${NAMESPACE}" \
+  --set credentials.useSecret=false \
+  --timeout 5m
+echo ""
+
 # --- Verification ---
 echo "============================================"
 echo "  Deployment Complete! Verifying..."
@@ -150,11 +186,18 @@ echo ""
 echo "=== Pods ==="
 kubectl get pods -n "$NAMESPACE"
 echo ""
+echo "=== Pods (elastic) ==="
+kubectl get pods -n elastic-prod
+echo ""
+echo "=== Pods (velero) ==="
+kubectl get pods -n velero
+echo ""
 echo "=== CronJobs ==="
 kubectl get cronjobs -n "$NAMESPACE"
 echo ""
 echo "=== Ingress ==="
 kubectl get ingress -n "$NAMESPACE"
+kubectl get ingress -n kubernetes-dashboard
 echo ""
 
 echo "=== NEXT STEPS ==="
@@ -162,3 +205,4 @@ echo "1. Validate ACM cert: terraform output acm_dns_validation"
 echo "2. Update Route53 DNS for viwell.tech -> new ALB"
 echo "3. Test: curl -I https://user.viwell.tech"
 echo "4. Update CI/CD templates for prod deployment"
+echo "5. Update ELASTIC_PASSWORD in ES values.yaml (currently CHANGE_ME_BEFORE_DEPLOY)"
