@@ -7,7 +7,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-# K8S_DIR: relative to repo root (scripts/ → production/ → environments/ → aws-terraform/ → repo root)
+# K8S_DIR: relative to repo root (scripts/ → production/ → environments/ → terraform/ → repo root)
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 K8S_DIR="$REPO_ROOT/k8s_v2_prod-main"
 NAMESPACE="prod-viwell"
@@ -54,11 +54,8 @@ fi
 echo ""
 
 # --- Phase 4: Patch and apply secrets ---
-echo "=== Phase 4: Patching secrets with Frankfurt RDS endpoint ==="
+echo "=== Phase 4: Patching and applying secrets ==="
 bash "$SCRIPT_DIR/patch-secrets.sh"
-echo ""
-echo "Secrets patched. Review above output, then press Enter to apply or Ctrl+C to abort..."
-read -r
 
 for SECRET_FILE in \
   "$K8S_DIR/user/secret.yaml" \
@@ -124,11 +121,15 @@ echo "Creating lago secret first..."
 bash "$SCRIPT_DIR/create-lago-secret.sh"
 helm repo add lago https://getlago.github.io/lago-helm-charts/ 2>/dev/null || true
 helm repo update
-if [ -f "$K8S_DIR/../Additional-services/lago/lago-values.yaml" ]; then
+LAGO_VALUES="$K8S_DIR/Additional-services/lago/lago-values.yaml"
+if [ -f "$LAGO_VALUES" ]; then
   helm upgrade --install lago lago/lago \
     -n "$NAMESPACE" \
-    -f "$K8S_DIR/../Additional-services/lago/lago-values.yaml" \
+    -f "$LAGO_VALUES" \
     --timeout 10m
+else
+  echo "  SKIP: lago-values.yaml not found at $LAGO_VALUES"
+  echo "  Create it and run: helm upgrade --install lago lago/lago -n $NAMESPACE -f <values-file>"
 fi
 echo ""
 
@@ -145,8 +146,20 @@ echo ""
 
 # --- Phase 11: GitHub runner ---
 echo "=== Phase 11: Deploying GitHub runner ==="
-if [ -d "$K8S_DIR/../Additional-services/1-runners-github" ]; then
-  kubectl apply -f "$K8S_DIR/../Additional-services/1-runners-github/"
+RUNNER_DIR="$K8S_DIR/Additional-services/1-runners-github"
+if [ -d "$RUNNER_DIR" ]; then
+  # Apply only K8s manifests (skip doc.txt, values.yaml etc.)
+  for f in "$RUNNER_DIR"/*.yaml; do
+    [ -f "$f" ] || continue
+    # Skip non-K8s files (values.yaml is helm values, not a K8s manifest)
+    basename_f=$(basename "$f")
+    if [ "$basename_f" = "values.yaml" ]; then
+      echo "  SKIP (helm values): $f"
+      continue
+    fi
+    echo "  Applying: $f"
+    kubectl apply -f "$f" || true
+  done
 fi
 echo ""
 
@@ -198,7 +211,7 @@ kubectl get cronjobs -n "$NAMESPACE"
 echo ""
 echo "=== Ingress ==="
 kubectl get ingress -n "$NAMESPACE"
-kubectl get ingress -n kubernetes-dashboard
+kubectl get ingress -n kubernetes-dashboard 2>/dev/null || true
 echo ""
 
 echo "=== NEXT STEPS ==="
@@ -206,4 +219,3 @@ echo "1. Validate ACM cert: terraform output acm_dns_validation"
 echo "2. Update Route53 DNS for viwell.tech -> new ALB"
 echo "3. Test: curl -I https://user.viwell.tech"
 echo "4. Update CI/CD templates for prod deployment"
-echo "5. Update ELASTIC_PASSWORD in ES values.yaml (currently CHANGE_ME_BEFORE_DEPLOY)"
